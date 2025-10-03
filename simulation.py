@@ -21,11 +21,11 @@ r = 0.015 # m
 
 # przekładnia
 n_1 = 1 # liczba zębów na wale napędzającym
-n_2 = 1 # liczba zębów na wale napędzanym
+n_2 = 9 # liczba zębów na wale napędzanym
 i_g = n_1 / n_2
-eta = 0.85 # 85 %
+eta = 0.85 # sprawność
 
-T_abc = T_abc / (i_g * eta) if (i_g != 1 or T_abc == 0) else T_abc
+T_abc = T_abc * (i_g * eta) if (i_g != 1) else T_abc
 
 total_time = 0.3 # s
 dt = max(L / R * 1e-2, 1e-6) # s
@@ -37,6 +37,7 @@ omega_RPM = [0]
 omega_load = [0]
 omega_RPM_load = [0]
 theta = [0]
+theta_load = [0]
 U = [U_sup]
 U_bEMF = [0]
 T_m = [0]
@@ -55,12 +56,13 @@ if __name__ == '__main__':
         omega.append(omega[i-1] + (dt * ((k_t * I[i] - B * omega[i-1] - T_abc) / J)))
         alpha.append((omega[i] - omega[i-1])/dt)
         omega_RPM.append(omega[i] * 60 / (2 * math.pi))
-        omega_load.append(omega[i] / i_g)
-        omega_RPM_load.append(omega_RPM[i] / i_g)
+        omega_load.append(omega[i] * i_g)
+        omega_RPM_load.append(omega_RPM[i] * i_g)
         theta.append(theta[i-1] + omega[i] * dt)
+        theta_load.append(theta_load[i-1] + omega_load[i] * dt)
         T_m.append(k_t * I[i])
-        T_out.append(T_m[i] * i_g * eta)
-        s = s + r * (theta[i] - theta[i-1])
+        T_out.append(T_m[i] / i_g * eta)
+        s = s + r * (theta_load[i] - theta_load[i-1])
     stop_time = time()  
     
     print(f'Simulation is done! It took {stop_time - start_time:.2f}s.')
