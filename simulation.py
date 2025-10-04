@@ -6,12 +6,12 @@ import math
 
 U_sup = 3 # V
 L = 0.1e-3 # H
-R = 1.2 # Ohm
+R = 2 # Ohm
 #k_e = 0.02 # Vs/rad
 #k_t = 0.02 # Nm/A
 k_e = 2e-3
 k_t = 2e-3
-T_abc = 0.0046720125 # Nm
+T_abc = 0.003 # Nm
 #B = 0.5e-5 # N*m/(rad/s)
 B = 0.5e-7 # N*m/(rad/s)
 #J = 0.0002 # kg*m^2
@@ -20,15 +20,19 @@ J = 3.8 * 1e-8 # kg*m^2
 r = 0.015 # m
 
 # przekładnia
-n_1 = 1 # liczba zębów na wale napędzającym
-n_2 = 9 # liczba zębów na wale napędzanym
-i_g = n_1 / n_2
+n_1 = 10 # liczba zębów na wale napędzającym
+n_2 = 20 # liczba zębów na wale napędzanym
+i_g = n_2 / n_1
 eta = 0.85 # sprawność
 
-T_abc = T_abc * (i_g * eta) if (i_g != 1) else T_abc
+print(f'Gear ratio: {i_g}, efficiency: {eta*100:.2f}%')
+
+T_abc = T_abc / (i_g * eta) if (i_g != 1) else T_abc
 
 total_time = 0.3 # s
-dt = max(L / R * 1e-2, 1e-6) # s
+dt = max(L / R * 1e-2, 1e-5) # s
+
+print(f'dt size is: {dt}')
 
 I = [0]
 alpha = [0]
@@ -56,12 +60,12 @@ if __name__ == '__main__':
         omega.append(omega[i-1] + (dt * ((k_t * I[i] - B * omega[i-1] - T_abc) / J)))
         alpha.append((omega[i] - omega[i-1])/dt)
         omega_RPM.append(omega[i] * 60 / (2 * math.pi))
-        omega_load.append(omega[i] * i_g)
-        omega_RPM_load.append(omega_RPM[i] * i_g)
+        omega_load.append(omega[i] / i_g)
+        omega_RPM_load.append(omega_RPM[i] / i_g)
         theta.append(theta[i-1] + omega[i] * dt)
         theta_load.append(theta_load[i-1] + omega_load[i] * dt)
         T_m.append(k_t * I[i])
-        T_out.append(T_m[i] / i_g * eta)
+        T_out.append(T_m[i] * i_g * eta)
         s = s + r * (theta_load[i] - theta_load[i-1])
     stop_time = time()  
     
